@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context" xmlns:security="http://www.springframework.org/schema/security"
-	xmlns:oauth2="http://www.springframework.org/schema/security/oauth2" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:oauth2="http://www.springframework.org/schema/security/oauth2" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util" xmlns:c="http://www.springframework.org/schema/c" xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-2.0.xsd
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
@@ -33,19 +33,32 @@
 
 	<context:component-scan base-package="org.mitre.web" />
 
-	<security:global-method-security pre-post-annotations="enabled" proxy-target-class="true" authentication-manager-ref="authenticationManager" />
+	<security:global-method-security pre-post-annotations="enabled" proxy-target-class="true" authentication-manager-ref="authenticationManager">
+		<security:expression-handler ref="oauthExpressionHandler"/>
+	</security:global-method-security>
 
-	<security:http auto-config="false" use-expressions="true" disable-url-rewriting="true" entry-point-ref="authenticationEntryPoint" pattern="/**">
-
-		<security:custom-filter before="PRE_AUTH_FILTER" ref="openIdConnectAuthenticationFilter" />
-
+	<security:http auto-config="false" use-expressions="true" disable-url-rewriting="true" entry-point-ref="authenticationEntryPoint" pattern="/photo ">
+		<security:custom-filter before="PRE_AUTH_FILTER" ref="resourceServerFilter" />
+		<security:expression-handler ref="oauthWebExpressionHandler"/>
 		<security:logout />
-
 	</security:http>
 
+	<security:http auto-config="false" use-expressions="true" disable-url-rewriting="true" entry-point-ref="authenticationEntryPoint" pattern="/**">
+		<security:custom-filter before="PRE_AUTH_FILTER" ref="openIdConnectAuthenticationFilter" />
+		<security:expression-handler ref="oauthWebExpressionHandler"/>
+		<security:logout />
+	</security:http>
+
+	<oauth2:web-expression-handler id="oauthWebExpressionHandler" />
+	<oauth2:expression-handler id ="oauthExpressionHandler"/>
+	
 	<bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-		<property name="loginFormUrl" value="/openid_connect_login" />
+		<constructor-arg name="loginFormUrl" value="/openid_connect_login" />
 	</bean>
+
+	<!-- <bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint"> -->
+	<!-- <property name="loginFormUrl" value="/openid_connect_login" /> -->
+	<!-- </bean> -->
 
 	<security:authentication-manager alias="authenticationManager">
 		<security:authentication-provider ref="openIdConnectAuthenticationProvider" />
@@ -83,7 +96,7 @@
 
 		<property name="issuerService" ref="hybridIssuerService" />
 		<property name="serverConfigurationService" ref="dynamicServerConfigurationService" />
-		<property name="clientConfigurationService" ref="dynamicClientConfigurationService" />
+		<property name="clientConfigurationService" ref="staticClientConfigurationService" />
 		<property name="authRequestOptionsService" ref="staticAuthRequestOptionsService" />
 		<property name="authRequestUrlBuilder" ref="plainAuthRequestUrlBuilder" />
 
@@ -251,8 +264,8 @@
 			<map>
 				<entry key="http://localhost:8080/openid-connect-server-webapp/">
 					<bean class="org.mitre.oauth2.model.RegisteredClient">
-						<property name="clientId" value="150fc67c-849b-45e2-8040-23677fdea4c7" />
-						<property name="clientSecret" value="AJIjmBD7BIYfSgFMcJQoZj8lMJvAA2L1yT3--RbsNAAjqx7txjj822lm8VyJ4e7kMoc8OGEYbtBGWfPMzpK4c7E" />
+						<property name="clientId" value="5db12f29-bfab-4678-a337-370de2f5449e" />
+						<property name="clientSecret" value="AJOPXYQQULvTZvPS5bn-pFKKyo-uBNsl5DqJ1yv9dBngNq3aWa63nwxnc3O4ilXS-87InTYfUpByl0rJ6l3jHr4" />
 						<property name="scope">
 							<set value-type="java.lang.String">
 								<value>openid</value>
@@ -283,8 +296,8 @@
 			<map>
 				<entry key="http://localhost:8080/openid-connect-server-webapp/">
 					<bean class="org.mitre.oauth2.model.RegisteredClient">
-						<property name="clientId" value="150fc67c-849b-45e2-8040-23677fdea4c7" />
-						<property name="clientSecret" value="AJIjmBD7BIYfSgFMcJQoZj8lMJvAA2L1yT3--RbsNAAjqx7txjj822lm8VyJ4e7kMoc8OGEYbtBGWfPMzpK4c7E" />
+						<property name="clientId" value="5db12f29-bfab-4678-a337-370de2f5449e" />
+						<property name="clientSecret" value="AJOPXYQQULvTZvPS5bn-pFKKyo-uBNsl5DqJ1yv9dBngNq3aWa63nwxnc3O4ilXS-87InTYfUpByl0rJ6l3jHr4" />
 						<property name="scope">
 							<set value-type="java.lang.String">
 								<value>openid</value>
@@ -445,8 +458,8 @@
 		<property name="introspectionUrl" value="http://localhost:8080/openid-connect-server-webapp/introspect" />
 		<property name="clientConfiguration">
 			<bean class="org.mitre.oauth2.model.RegisteredClient">
-				<property name="clientId" value="150fc67c-849b-45e2-8040-23677fdea4c7" />
-				<property name="clientSecret" value="AJIjmBD7BIYfSgFMcJQoZj8lMJvAA2L1yT3--RbsNAAjqx7txjj822lm8VyJ4e7kMoc8OGEYbtBGWfPMzpK4c7E" />
+				<property name="clientId" value="5db12f29-bfab-4678-a337-370de2f5449e" />
+				<property name="clientSecret" value="AJOPXYQQULvTZvPS5bn-pFKKyo-uBNsl5DqJ1yv9dBngNq3aWa63nwxnc3O4ilXS-87InTYfUpByl0rJ6l3jHr4" />
 			</bean>
 		</property>
 	</bean>
