@@ -16,36 +16,23 @@
  *******************************************************************************/
 package org.mitre.web;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Locale;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.mitre.openid.connect.client.OIDCAuthenticationFilter;
 import org.mitre.openid.connect.client.SubjectIssuerGrantedAuthority;
-import org.mitre.openid.connect.model.OIDCAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Handles requests for the application home page.
@@ -58,10 +45,10 @@ public class HomeController {
 	// filter reference so we can get class names and things like that.
 	@Autowired
 	private OIDCAuthenticationFilter filter;
-	
+
 	@Resource(name = "namedAdmins")
 	private Set<SubjectIssuerGrantedAuthority> admins;
-	
+
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
@@ -73,7 +60,7 @@ public class HomeController {
 		model.addAttribute("clientConfigurationServiceClass", filter.getClientConfigurationService().getClass().getSimpleName());
 		model.addAttribute("authRequestOptionsServiceClass", filter.getAuthRequestOptionsService().getClass().getSimpleName());
 		model.addAttribute("authRequestUriBuilderClass", filter.getAuthRequestUrlBuilder().getClass().getSimpleName());
-		
+
 		model.addAttribute("admins", admins);
 
 		return "home";
@@ -106,8 +93,9 @@ public class HomeController {
 
 	@ResponseBody
 	@RequestMapping("/photo")
-	@PreAuthorize("hasRole('ROLE_USER')")
-	public String photo(){
+	// @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_API')")
+	@PreAuthorize("hasRole('ROLE_USER') or #oauth2.hasScope('phone') ")
+	public String photo() {
 		return "hello world,resources";
 	}
 }
